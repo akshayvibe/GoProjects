@@ -26,8 +26,13 @@ go.work
 *~
 .DS_Store
 
+
 # Environment files
 .env
+
+#storage
+storage.db
+local.yaml
 
 # Logs
 *.log
