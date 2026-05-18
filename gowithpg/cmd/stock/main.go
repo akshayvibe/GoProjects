@@ -69,7 +69,7 @@ func main() {
 
 		if err != nil && err != http.ErrServerClosed {
 
-			logger.Error("failed to start server",
+			logger.Error("failed to start serve",
 				slog.String("error", err.Error()),
 			)
 
