@@ -53,7 +53,7 @@ func main() {
 		Handler: router,
 	}
 
-	logger.Info("server starting",
+	logger.Info("server startin",
 		slog.String("address", cfg.Addr),
 	)
 
