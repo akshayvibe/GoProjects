@@ -7,4 +7,5 @@ type StockStore interface {
 	GetAllStocks() ([]model.Stock, error)
 	UpdateStock(int, *model.Stock) error
 	DeleteStock(int) error
+	Ping()error
 }

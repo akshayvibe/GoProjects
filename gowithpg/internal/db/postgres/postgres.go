@@ -24,12 +24,13 @@ func New(cfg *config.Config) (*Postgres, error) {
 	}
 
 	_, err = db.Exec(`
-	CREATE TABLE IF NOT EXISTS students (
-		id SERIAL PRIMARY KEY,
-		name TEXT,
-		email TEXT UNIQUE,
-		age INTEGER
-	)
+	CREATE TABLE IF NOT EXISTS stocks (
+	id SERIAL PRIMARY KEY,
+	name TEXT,
+	symbol TEXT,
+	price DOUBLE PRECISION,
+	quantity INTEGER
+)
 	`)
 	if err != nil {
 		return nil, err
@@ -38,6 +39,9 @@ func New(cfg *config.Config) (*Postgres, error) {
 	return &Postgres{
 		Db: db,
 	}, nil
+}
+func (p *Postgres) Ping() error {
+	return p.Db.Ping()
 }
 // CREATE
 func (p *Postgres) CreateStock(stock *model.Stock) error {
@@ -140,6 +144,7 @@ func (p *Postgres) UpdateStock(id int, stock *model.Stock) error {
 
 // DELETE
 func (p *Postgres) DeleteStock(id int) error {
+	
 	query := `DELETE FROM stocks WHERE id=$1`
 
 	_, err := p.Db.Exec(query, id)

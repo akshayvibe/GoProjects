@@ -13,52 +13,91 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-	// "gowithpg/internal/db"
 )
-func main(){
-	cfg:=config.MustLoad()
 
-	//database initialisation 
-	db,err:=postgres.New(cfg)
+func main() {
+
+	// LOAD CONFIG
+	cfg := config.MustLoad()
+
+	// LOGGER
+	logger := slog.New(
+		slog.NewTextHandler(os.Stdout, nil),
+	)
+
+	// DATABASE INITIALIZATION
+	db, err := postgres.New(cfg)
 	if err != nil {
+
+		logger.Error("failed to initialize postgres",
+			slog.String("error", err.Error()),
+		)
+
 		log.Fatal(err)
 	}
-	slog.Info("Postgres initialized", slog.String("env", cfg.Env), slog.String("version", "1.0.0"))
-	
-	//initialising handler 
-	h:=&handler.Handler{
-		DB: db,
-	}
-	router:=routes.RegisterRoutes(h)
-	server:=http.Server{
-		Addr: cfg.Addr,
+
+	logger.Info("postgres initialized",
+		slog.String("env", cfg.Env),
+		slog.String("version", "1.0.0"),
+	)
+
+	// HANDLER INITIALIZATION
+	h := handler.New(db, logger)
+
+	// ROUTES
+	router := routes.RegisterRoutes(h)
+
+	// SERVER
+	server := &http.Server{
+		Addr:    cfg.Addr,
 		Handler: router,
 	}
-	slog.Info("server started", slog.String("address", cfg.Addr))
-	slog.Info("server started", slog.String("address", cfg.Addr))
 
+	logger.Info("server starting",
+		slog.String("address", cfg.Addr),
+	)
+
+	// CHANNEL FOR SHUTDOWN SIGNALS
 	done := make(chan os.Signal, 1)
 
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
+	// START SERVER
 	go func() {
+
 		err := server.ListenAndServe()
-		if err != nil {
-			log.Fatal("failed to start server")
+
+		if err != nil && err != http.ErrServerClosed {
+
+			logger.Error("failed to start server",
+				slog.String("error", err.Error()),
+			)
+
+			os.Exit(1)
 		}
 	}()
 
+	// WAIT FOR SIGNAL
 	<-done
 
-	slog.Info("shutting down the server")
+	logger.Info("shutting down server")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	// GRACEFUL SHUTDOWN
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		5*time.Second,
+	)
+
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {
-		slog.Error("failed to shutdown server", slog.String("error", err.Error()))
+
+		logger.Error("failed to shutdown server",
+			slog.String("error", err.Error()),
+		)
+
+		os.Exit(1)
 	}
 
-	slog.Info("server shutdown successfully")
+	logger.Info("server shutdown successfully")
 }
-
