@@ -15,6 +15,5 @@ func RegisterRoutes(h *handler.Handler) *http.ServeMux {
 	mux.HandleFunc("GET /api/stocks/{id}", h.GetStock)
 	mux.HandleFunc("PUT /api/stocks/{id}", h.UpdateStock)
 	mux.HandleFunc("DELETE /api/stocks/{id}", h.DeleteStock)
-
 	return mux
 }
