@@ -2,7 +2,9 @@ package handler
 
 import (
 	"encoding/json"
-	storage "gowithpg/internal/db/postgres"
+	// storage "gowithpg/internal/db/postgres"
+	// storage "gowithpg/internal/db/postgres"
+	"gowithpg/internal/db"
 	"gowithpg/internal/model"
 	"net/http"
 	"strconv"
@@ -11,7 +13,7 @@ import (
 )
 
 type Handler struct {
-	DB *storage.Postgres
+	DB db.StockStore
 }
 
 // CREATE STOCK
